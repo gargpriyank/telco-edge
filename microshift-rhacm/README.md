@@ -38,7 +38,7 @@ Make sure you select the Microshift custom repository. Download the ISO image an
 
 ## Installation
 
-1. Install and setup CRI-O
+1. Login as root user. Install and setup CRI-O
    ```markdown
    rpm-ostree install cri-o cri-tools
    ```
@@ -51,11 +51,14 @@ Make sure you select the Microshift custom repository. Download the ISO image an
    ```markdown
    crictl info
    ```
-4. Install Microshift
+4. [podman](https://podman.io/) will already be installed. Search the `auth.json` in the root directory and replace the content 
+with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret).
+
+5. Install Microshift
    ```markdown
    rpm-ostree install microshift
    ```
-5. Enable firewall
+6. Enable firewall
    ```markdown
    firewall-cmd --zone=trusted --add-source=10.42.0.0/16 --permanent
    firewall-cmd --zone=public --add-port=80/tcp --permanent
@@ -63,32 +66,32 @@ Make sure you select the Microshift custom repository. Download the ISO image an
    firewall-cmd --zone=public --add-port=5353/udp --permanent
    firewall-cmd --reload
    ```
-6. Start Microshift service
+7. Start Microshift service
    ```markdown
    systemctl enable microshift --now
-   ```
-7. Setup oc and kubectl CLI
+   ``` 
+8. Setup oc and kubectl CLI
    ```markdown
    curl -O https://mirror.openshift.com/pub/openshift-v4/$(uname -m)/clients/ocp/stable/openshift-client-linux.tar.gz
    tar -xf openshift-client-linux.tar.gz -C /usr/local/bin oc kubectl
    ```
-8. Configure kubeconfig
+9. Configure kubeconfig
    ```markdown
    mkdir ~/.kube
    sudo cat /var/lib/microshift/resources/kubeadmin/kubeconfig > ~/.kube/config
    ```
-9. Verify installation
-   ```markdown
-   oc get pods -A
+10. Verify installation
+     ```markdown
+     oc get pods -A
    
-   NAMESPACE                       NAME                                  READY   STATUS    RESTARTS   AGE
-   kube-system                     kube-flannel-ds-kbztk                 1/1     Running   0          10m
-   kubevirt-hostpath-provisioner   kubevirt-hostpath-provisioner-4f28f   1/1     Running   0          6m29s
-   openshift-dns                   dns-default-w4vnj                     2/2     Running   0          10m
-   openshift-dns                   node-resolver-4zlgk                   1/1     Running   0          10m
-   openshift-ingress               router-default-6c96f6bc66-94gfd       1/1     Running   0          10m
-   openshift-service-ca            service-ca-7bffb6f6bf-kvvkd           1/1     Running   0          10m
-   ```
+     NAMESPACE                       NAME                                  READY   STATUS    RESTARTS   AGE
+     kube-system                     kube-flannel-ds-kbztk                 1/1     Running   0          10m
+     kubevirt-hostpath-provisioner   kubevirt-hostpath-provisioner-4f28f   1/1     Running   0          6m29s
+     openshift-dns                   dns-default-w4vnj                     2/2     Running   0          10m
+     openshift-dns                   node-resolver-4zlgk                   1/1     Running   0          10m
+     openshift-ingress               router-default-6c96f6bc66-94gfd       1/1     Running   0          10m
+     openshift-service-ca            service-ca-7bffb6f6bf-kvvkd           1/1     Running   0          10m
+     ```
 
 ## Import Microshift cluster in RHACM
 
