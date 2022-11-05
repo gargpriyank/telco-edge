@@ -42,7 +42,7 @@ Make sure you select the Microshift custom repository. Download the ISO image an
    ```markdown
    rpm-ostree install cri-o cri-tools
    ```
-2. Reboot teh device and enable CRI-O
+2. Reboot the device and enable CRI-O
    ```markdown
    systemctl reboot
    systemctl enable crio --now
