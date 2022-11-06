@@ -52,13 +52,15 @@ Make sure you select the Microshift custom repository. Download the ISO image an
    crictl info
    ```
 4. [podman](https://podman.io/) will already be installed. Search the `auth.json` in the root directory and replace the content 
-with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret).
-
-5. Install Microshift
+with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret). Use podman to log-in to registry.
+   ```markdown
+      podman login registry.redhat.io --tls-verify=false --authfile <authfile_path>
+   ```
+6. Install Microshift
    ```markdown
    rpm-ostree install microshift
    ```
-6. Enable firewall
+7. Enable firewall
    ```markdown
    firewall-cmd --zone=trusted --add-source=10.42.0.0/16 --permanent
    firewall-cmd --zone=public --add-port=80/tcp --permanent
@@ -66,21 +68,21 @@ with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret).
    firewall-cmd --zone=public --add-port=5353/udp --permanent
    firewall-cmd --reload
    ```
-7. Start Microshift service
+8. Start Microshift service
    ```markdown
    systemctl enable microshift --now
    ``` 
-8. Setup oc and kubectl CLI
+9. Setup oc and kubectl CLI
    ```markdown
    curl -O https://mirror.openshift.com/pub/openshift-v4/$(uname -m)/clients/ocp/stable/openshift-client-linux.tar.gz
    tar -xf openshift-client-linux.tar.gz -C /usr/local/bin oc kubectl
    ```
-9. Configure kubeconfig
-   ```markdown
-   mkdir ~/.kube
-   sudo cat /var/lib/microshift/resources/kubeadmin/kubeconfig > ~/.kube/config
-   ```
-10. Verify installation
+10. Configure kubeconfig
+    ```markdown
+    mkdir ~/.kube
+    sudo cat /var/lib/microshift/resources/kubeadmin/kubeconfig > ~/.kube/config
+    ```
+11. Verify installation
      ```markdown
      oc get pods -A
    
