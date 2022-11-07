@@ -48,6 +48,8 @@ with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret).
    curl -L -o /etc/yum.repos.d/fedora-modular.repo https://src.fedoraproject.org/rpms/fedora-repos/raw/rawhide/f/fedora-modular.repo 
    curl -L -o /etc/yum.repos.d/fedora-updates-modular.repo https://src.fedoraproject.org/rpms/fedora-repos/raw/rawhide/f/fedora-updates-modular.repo
    curl -L -o /etc/yum.repos.d/group_redhat-et-microshift-fedora-37.repo https://copr.fedorainfracloud.org/coprs/g/redhat-et/microshift/repo/fedora-37/group_redhat-et-microshift-fedora-37.repo
+   curl -L -o /etc/yum.repos.d/group_redhat-et-microshift-fedora-37.repo https://copr.fedorainfracloud.org/coprs/g/redhat-et/microshift/repo/fedora-35/group_redhat-et-microshift-fedora-35.repo
+   curl -L -o /etc/yum.repos.d/group_redhat-et-microshift-CentOS_8.repo https://copr.fedorainfracloud.org/coprs/g/redhat-et/microshift/repo/centos-stream-8/group_redhat-et-microshift-centos-stream-8.repo
    dnf copr enable -y @redhat-et/microshift
    dnf install microshift 
    ```
