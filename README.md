@@ -11,4 +11,4 @@ This project is intended to provide examples around Telco and Edge deployments.
 
 2) [microshift-raspberry-pi](https://github.com/gargpriyank/telco-edge/tree/main/microshift-raspberry-pi)
 
-The step-by-step guidance for deploying Microshift on the Raspberry Pi.
+    The step-by-step guidance for deploying Microshift on the Raspberry Pi.
