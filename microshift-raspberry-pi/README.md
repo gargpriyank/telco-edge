@@ -1,47 +1,27 @@
-# Deploy Microshift cluster and manage it with Red Hat Advanced Cluster Management for Kubernetes (RHACM)
+# Deploy Microshift on Raspberry Pi.
 
-The step-by-step guidance for deploying Microshift on the edge devices, import the cluster on 
-RHACM and deploy a sample application onto the cluster. Please refer to the original 
-[Microshift documentation](https://microshift.io/docs/getting-started/) first and these guidelines will be helpful 
-in case you face any deployment issues. This documentation uses [rpm-ostree](https://rpm-ostree.readthedocs.io/en/stable/) for installation.
+The step-by-step guidance for deploying Microshift on Raspberry Pi.
 
 ## Navigation
 
-- [Prerequisites](#prerequisites)
-- [Initial Preparation](#initial-preparation)
 - [Installation](#installation)
+- [Initial Preparation](#initial-preparation)
 - [Import Microshift cluster in RHACM](#import-microshift-cluster-in-rhacm)
 - [Deploy a simple application to Microshift cluster from RHACM console](#deploy-a-simple-application-to-microshift-cluster-from-rhacm-console)
 
-## Prerequisites
-
-You have a Red Hat account, a valid subscription and get the 
-[RHACM](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.6/html/install/index) installed on your managed from
-[RHOCP](https://access.redhat.com/documentation/en-us/openshift_container_platform/4.11/html/installing/index) cluster.
-
 ## Initial Preparation
 
-1. Log-in to your Red Hat Hybrid Cloud Console account and build and new RHEL 8.6 ISO image at [edge management](https://console.redhat.com/edge/manage-images). 
-Make sure you select the Microshift custom repository. Download the ISO image and install it onto your edge device.
-2. Register your system with subscription manager and enable RHOCP repos.
-   ```markdown
-   subscription-manager register --username=<user_name> --auto-attach
-   subscription-manager repos --enable rhocp-4.8-for-rhel-8-x86_64-rpms
-   ```
-   Follow below steps, if auto-attach doesn't work.
-   1. Log-in to the [Customer Portal](https://access.redhat.com/front).
-   2. Click on the Subscriptions at the upper left.
-   3. Click on Systems tab in the upper menu.
-   4. Click on the name of the system.
-   5. Click on Attach a subscription in Subscriptions tab.
-   6. Select the desired Subscriptions and click Attach Subscriptions.
-   7. Login as root and update the install.
-
+Follow [Raspberry Pi OS installer](https://www.raspberrypi.com/software/) documentation to install Fedberry OS on your Raspberry Pi.
+   
 ## Installation
 
-1. Login as root user. Install and setup CRI-O
+1. Boot your Raspberry Pi using the SD card. Login as root user. Install and setup CRI-O
    ```markdown
-   rpm-ostree install cri-o cri-tools
+   dnf -y install 'dnf-command(copr)'
+   dnf -y copr enable rhcontainerbot/container-selinux
+   curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/CentOS_8/devel:kubic:libcontainers:stable.repo
+   curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:1.22.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:1.22/CentOS_8/devel:kubic:libcontainers:stable:cri-o:1.22.repo
+   dnf install -y cri-o cri-tools
    ```
 2. Reboot the device and enable CRI-O
    ```markdown
@@ -52,15 +32,24 @@ Make sure you select the Microshift custom repository. Download the ISO image an
    ```markdown
    crictl info
    ```
-4. [podman](https://podman.io/) will already be installed. Search the `auth.json` in the root directory and replace the content 
-with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret). Use podman to log-in to registry.
+4. Install [podman](https://podman.io/). Search the `auth.json` in the root directory and replace the content 
+with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret). Use podman to log-in to registry
    ```markdown
+   dnf install -y podman
    podman login registry.redhat.io --tls-verify=false --authfile <authfile_path>
+   ```
+5. Install and start firewall
+   ```markdown
+   dnf install -y firewalld
+   systemctl enable firewalld --now
    ```
 6. Install Microshift
    ```markdown
+   curl -L -o /etc/yum.repos.d/fedora-modular.repo https://src.fedoraproject.org/rpms/fedora-repos/raw/rawhide/f/fedora-modular.repo 
+   curl -L -o /etc/yum.repos.d/fedora-updates-modular.repo https://src.fedoraproject.org/rpms/fedora-repos/raw/rawhide/f/fedora-updates-modular.repo
+   curl -L -o /etc/yum.repos.d/group_redhat-et-microshift-fedora-35.repo https://copr.fedorainfracloud.org/coprs/g/redhat-et/microshift/repo/fedora-35/group_redhat-et-microshift-fedora-35.repo
    dnf copr enable -y @redhat-et/microshift
-   rpm-ostree install microshift
+   dnf install microshift 
    ```
 7. Enable firewall
    ```markdown
@@ -76,13 +65,13 @@ with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret).
    ``` 
 9. Setup oc and kubectl CLI
    ```markdown
-   curl -O https://mirror.openshift.com/pub/openshift-v4/$(uname -m)/clients/ocp/stable/openshift-client-linux.tar.gz
+   curl -O https://mirror.openshift.com/pub/openshift-v4/arm64/clients/ocp/stable/openshift-client-linux.tar.gz
    tar -xf openshift-client-linux.tar.gz -C /usr/local/bin oc kubectl
    ```
 10. Configure kubeconfig
     ```markdown
     mkdir ~/.kube
-    cat /sysroot/ostree/deploy/rhel-edge/var/lib/containers/storage/volumes/microshift-data/_data/resources/kubeadmin/kubeconfig > ~/.kube/config
+    cat /var/lib/microshift/resources/kubeadmin/kubeconfig > ~/.kube/config
     ```
 11. Verify installation
      ```markdown
