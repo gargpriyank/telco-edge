@@ -22,7 +22,6 @@ Follow [Raspberry Pi OS installer](https://www.raspberrypi.com/software/) docume
    curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/CentOS_8/devel:kubic:libcontainers:stable.repo
    curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:${VERSION}/CentOS_8/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo
    dnf install -y cri-o cri-tools
-   rpm-ostree install cri-o cri-tools
    ```
 2. Reboot the device and enable CRI-O
    ```markdown
@@ -33,9 +32,10 @@ Follow [Raspberry Pi OS installer](https://www.raspberrypi.com/software/) docume
    ```markdown
    crictl info
    ```
-4. [podman](https://podman.io/) will already be installed. Search the `auth.json` in the root directory and replace the content 
+4. Install [podman](https://podman.io/). Search the `auth.json` in the root directory and replace the content 
 with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret). Use podman to log-in to registry.
    ```markdown
+   dnf install -y podman
    podman login registry.redhat.io --tls-verify=false --authfile <authfile_path>
    ```
 6. Install Microshift
