@@ -20,7 +20,7 @@ Follow [Raspberry Pi OS installer](https://www.raspberrypi.com/software/) docume
    dnf -y install 'dnf-command(copr)'
    dnf -y copr enable rhcontainerbot/container-selinux
    curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/CentOS_8/devel:kubic:libcontainers:stable.repo
-   curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:1.21.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:1.21/CentOS_8/devel:kubic:libcontainers:stable:cri-o:1.21.repo
+   curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:1.22.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:1.22/CentOS_8/devel:kubic:libcontainers:stable:cri-o:1.22.repo
    dnf install -y cri-o cri-tools
    ```
 2. Reboot the device and enable CRI-O
@@ -47,7 +47,7 @@ with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret).
    ```markdown
    curl -L -o /etc/yum.repos.d/fedora-modular.repo https://src.fedoraproject.org/rpms/fedora-repos/raw/rawhide/f/fedora-modular.repo 
    curl -L -o /etc/yum.repos.d/fedora-updates-modular.repo https://src.fedoraproject.org/rpms/fedora-repos/raw/rawhide/f/fedora-updates-modular.repo
-   curl -L -o /etc/yum.repos.d/group_redhat-et-microshift-fedora-35.repo https://copr.fedorainfracloud.org/coprs/g/redhat-et/microshift/repo/fedora-35/group_redhat-et-microshift-fedora-35.repo
+   curl -L -o /etc/yum.repos.d/group_redhat-et-microshift-fedora-37.repo https://copr.fedorainfracloud.org/coprs/g/redhat-et/microshift/repo/fedora-37/group_redhat-et-microshift-fedora-37.repo
    dnf copr enable -y @redhat-et/microshift
    curl -o /etc/systemd/system/microshift.service https://raw.githubusercontent.com/redhat-et/microshift/main/packaging/systemd/microshift-containerized.service
    ```
