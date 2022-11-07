@@ -58,7 +58,7 @@ with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret).
    ``` 
 8. Setup oc and kubectl CLI
    ```markdown
-   curl -O https://mirror.openshift.com/pub/openshift-v4/$(uname -m)/clients/ocp/stable/openshift-client-linux.tar.gz
+   curl -O https://mirror.openshift.com/pub/openshift-v4/arm64/clients/ocp/stable/openshift-client-linux.tar.gz
    tar -xf openshift-client-linux.tar.gz -C /usr/local/bin oc kubectl
    ```
 9. Configure kubeconfig
