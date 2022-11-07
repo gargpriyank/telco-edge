@@ -20,7 +20,7 @@ Follow [Raspberry Pi OS installer](https://www.raspberrypi.com/software/) docume
    dnf -y install 'dnf-command(copr)'
    dnf -y copr enable rhcontainerbot/container-selinux
    curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/CentOS_8/devel:kubic:libcontainers:stable.repo
-   curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:1.22.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:1.22/CentOS_8/devel:kubic:libcontainers:stable:cri-o:1.22.repo
+   curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:1.21.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:1.21/CentOS_8/devel:kubic:libcontainers:stable:cri-o:1.21.repo
    dnf install -y cri-o cri-tools
    ```
 2. Reboot the device and enable CRI-O
@@ -33,18 +33,21 @@ Follow [Raspberry Pi OS installer](https://www.raspberrypi.com/software/) docume
    crictl info
    ```
 4. Install [podman](https://podman.io/). Search the `auth.json` in the root directory and replace the content 
-with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret). Use podman to log-in to registry.
+with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret). Use podman to log-in to registry
    ```markdown
    dnf install -y podman
    podman login registry.redhat.io --tls-verify=false --authfile <authfile_path>
    ```
-5. Install and start firewall.
+5. Install and start firewall
    ```markdown
    dnf install -y firewalld
    systemctl enable firewalld --now
    ```
 6. Install Microshift
    ```markdown
+   curl -L -o /etc/yum.repos.d/fedora-modular.repo https://src.fedoraproject.org/rpms/fedora-repos/raw/rawhide/f/fedora-modular.repo 
+   curl -L -o /etc/yum.repos.d/fedora-updates-modular.repo https://src.fedoraproject.org/rpms/fedora-repos/raw/rawhide/f/fedora-updates-modular.repo
+   curl -L -o /etc/yum.repos.d/group_redhat-et-microshift-fedora-37.repo https://copr.fedorainfracloud.org/coprs/g/redhat-et/microshift/repo/fedora-37/group_redhat-et-microshift-fedora-37.repo
    dnf copr enable -y @redhat-et/microshift
    curl -o /etc/systemd/system/microshift.service https://raw.githubusercontent.com/redhat-et/microshift/main/packaging/systemd/microshift-containerized.service
    ```
