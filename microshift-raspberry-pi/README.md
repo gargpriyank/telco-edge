@@ -49,7 +49,7 @@ with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret).
    curl -L -o /etc/yum.repos.d/fedora-updates-modular.repo https://src.fedoraproject.org/rpms/fedora-repos/raw/rawhide/f/fedora-updates-modular.repo
    curl -L -o /etc/yum.repos.d/group_redhat-et-microshift-fedora-37.repo https://copr.fedorainfracloud.org/coprs/g/redhat-et/microshift/repo/fedora-37/group_redhat-et-microshift-fedora-37.repo
    dnf copr enable -y @redhat-et/microshift
-   curl -o /etc/systemd/system/microshift.service https://raw.githubusercontent.com/redhat-et/microshift/main/packaging/systemd/microshift-containerized.service
+   dnf install microshift 
    ```
 7. Enable firewall
    ```markdown
