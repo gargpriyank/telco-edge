@@ -1,45 +1,27 @@
-# Deploy Microshift cluster and manage it with Red Hat Advanced Cluster Management for Kubernetes (RHACM)
+# Deploy Microshift on Raspberry Pi.
 
-The step-by-step guidance for deploying Microshift on the edge devices, import the cluster on 
-RHACM and deploy a sample application onto the cluster. Please refer to the original 
-[Microshift documentation](https://microshift.io/docs/getting-started/) first and these guidelines will be helpful 
-in case you face any deployment issues. This documentation uses [rpm-ostree](https://rpm-ostree.readthedocs.io/en/stable/) for installation.
+The step-by-step guidance for deploying Microshift on Raspberry Pi.
 
 ## Navigation
 
-- [Prerequisites](#prerequisites)
-- [Initial Preparation](#initial-preparation)
 - [Installation](#installation)
+- [Initial Preparation](#initial-preparation)
 - [Import Microshift cluster in RHACM](#import-microshift-cluster-in-rhacm)
 - [Deploy a simple application to Microshift cluster from RHACM console](#deploy-a-simple-application-to-microshift-cluster-from-rhacm-console)
 
-## Prerequisites
-
-You have a Red Hat account, a valid subscription and get the 
-[RHACM](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.6/html/install/index) installed on your managed from
-[RHOCP](https://access.redhat.com/documentation/en-us/openshift_container_platform/4.11/html/installing/index) cluster.
-
 ## Initial Preparation
 
-1. Log-in to your Red Hat Hybrid Cloud Console account and build and new RHEL 8.6+ ISO image at [edge management](https://console.redhat.com/edge/manage-images). 
-Make sure you select the Microshift custom repository. Download the ISO image and install it onto your edge device.
-2. Register your system with subscription manager.
-   ```markdown
-   subscription-manager register --username=<user_name> --auto-attach
-   ```
-   Follow below steps, if auto-attach doesn't work.
-   1. Log-in to the Customer Portal.
-   2. Click on the Subscriptions at the upper left.
-   3. Click on Systems tab in the upper menu.
-   4. Click on the name of the system.
-   5. Click on Attach a subscription in Subscriptions tab.
-   6. Select the desired Subscriptions and click Attach Subscriptions.
-   7. Login as root and update the install.
-
+Follow [Raspberry Pi OS installer](https://www.raspberrypi.com/software/) documentation to install Fedberry OS on your Raspberry Pi.
+   
 ## Installation
 
-1. Login as root user. Install and setup CRI-O
+1. Boot your Raspberry Pi using the SD card. Login as root user. Install and setup CRI-O
    ```markdown
+   dnf -y install 'dnf-command(copr)'
+   dnf -y copr enable rhcontainerbot/container-selinux
+   curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/CentOS_8/devel:kubic:libcontainers:stable.repo
+   curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:${VERSION}/CentOS_8/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo
+   dnf install -y cri-o cri-tools
    rpm-ostree install cri-o cri-tools
    ```
 2. Reboot the device and enable CRI-O
