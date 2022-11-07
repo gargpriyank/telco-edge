@@ -20,7 +20,7 @@ Follow [Raspberry Pi OS installer](https://www.raspberrypi.com/software/) docume
    dnf -y install 'dnf-command(copr)'
    dnf -y copr enable rhcontainerbot/container-selinux
    curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/CentOS_8/devel:kubic:libcontainers:stable.repo
-   curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:${VERSION}/CentOS_8/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo
+   curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:1.22.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:1.22/CentOS_8/devel:kubic:libcontainers:stable:cri-o:1.22.repo
    dnf install -y cri-o cri-tools
    ```
 2. Reboot the device and enable CRI-O
@@ -45,8 +45,7 @@ with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret).
    ```
 6. Install Microshift
    ```markdown
-   git clone https://github.com/redhat-et/microshift-config
-   sudo dnf copr enable -y @redhat-et/microshift
+   dnf copr enable -y @redhat-et/microshift
    curl -o /etc/systemd/system/microshift.service https://raw.githubusercontent.com/redhat-et/microshift/main/packaging/systemd/microshift-containerized.service
    ```
 7. Enable firewall
@@ -69,7 +68,7 @@ with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret).
 10. Configure kubeconfig
     ```markdown
     mkdir ~/.kube
-    sudo cat /var/lib/microshift/resources/kubeadmin/kubeconfig > ~/.kube/config
+    cat /var/lib/microshift/resources/kubeadmin/kubeconfig > ~/.kube/config
     ```
 11. Verify installation
      ```markdown

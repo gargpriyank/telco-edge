@@ -21,14 +21,15 @@ You have a Red Hat account, a valid subscription and get the
 
 ## Initial Preparation
 
-1. Log-in to your Red Hat Hybrid Cloud Console account and build and new RHEL 8.6+ ISO image at [edge management](https://console.redhat.com/edge/manage-images). 
+1. Log-in to your Red Hat Hybrid Cloud Console account and build and new RHEL 8.6 ISO image at [edge management](https://console.redhat.com/edge/manage-images). 
 Make sure you select the Microshift custom repository. Download the ISO image and install it onto your edge device.
-2. Register your system with subscription manager.
+2. Register your system with subscription manager and enable RHOCP repos.
    ```markdown
    subscription-manager register --username=<user_name> --auto-attach
+   subscription-manager repos --enable rhocp-4.8-for-rhel-8-x86_64-rpms
    ```
    Follow below steps, if auto-attach doesn't work.
-   1. Log-in to the Customer Portal.
+   1. Log-in to the [Customer Portal](https://access.redhat.com/front).
    2. Click on the Subscriptions at the upper left.
    3. Click on Systems tab in the upper menu.
    4. Click on the name of the system.
@@ -58,6 +59,7 @@ with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret).
    ```
 6. Install Microshift
    ```markdown
+   dnf copr enable -y @redhat-et/microshift
    rpm-ostree install microshift
    ```
 7. Enable firewall
@@ -80,7 +82,7 @@ with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret).
 10. Configure kubeconfig
     ```markdown
     mkdir ~/.kube
-    sudo cat /var/lib/microshift/resources/kubeadmin/kubeconfig > ~/.kube/config
+    cat /sysroot/ostree/deploy/rhel-edge/var/lib/containers/storage/volumes/microshift-data/_data/resources/kubeadmin/kubeconfig > ~/.kube/config
     ```
 11. Verify installation
      ```markdown
