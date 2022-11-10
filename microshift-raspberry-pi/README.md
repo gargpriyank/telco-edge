@@ -4,54 +4,55 @@ The step-by-step guidance for deploying Microshift on Raspberry Pi.
 
 ## Navigation
 
-- [Installation](#installation)
 - [Initial Preparation](#initial-preparation)
+- [Installation](#installation)
 - [Import Microshift cluster in RHACM](#import-microshift-cluster-in-rhacm)
 - [Deploy a simple application to Microshift cluster from RHACM console](#deploy-a-simple-application-to-microshift-cluster-from-rhacm-console)
 
 ## Initial Preparation
 
-Follow [Raspberry Pi OS installer](https://www.raspberrypi.com/software/) documentation to install Fedberry OS on your Raspberry Pi.
+Download the [Fedora Minimal](https://arm.fedoraproject.org/) raw image and use the [Raspberry Pi Imager](https://www.raspberrypi.com/software/) 
+to upload the image and install the OS on your SD card that will be used as a boot device for your Raspberry Pi.
    
 ## Installation
 
-1. Boot your Raspberry Pi using the SD card. Login as root user. Install and setup CRI-O
+1. Boot your Raspberry Pi using the SD card and let the Fedora OS configured and installed. Login as root user. Configure Wifi
    ```markdown
-   dnf -y install 'dnf-command(copr)'
-   dnf -y copr enable rhcontainerbot/container-selinux
-   curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/CentOS_8/devel:kubic:libcontainers:stable.repo
-   curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:1.22.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:1.22/CentOS_8/devel:kubic:libcontainers:stable:cri-o:1.22.repo
-   dnf install -y cri-o cri-tools
+   nmcli device wifi list
+   nmcli device wifi connect <SSID|BSSID> password <password>
    ```
-2. Reboot the device and enable CRI-O
+2. Install and setup dependencies and CRI-O
+   ```markdown
+   dnf -y update
+   dnf -y install git golang rpm-build selinux-policy-devel container-selinux
+   dnf -y module enable cri-o:1.21
+   dnf -y install cri-o cri-tools
+   ```
+3. Reboot the device and enable CRI-O
    ```markdown
    systemctl reboot
    systemctl enable crio --now
    ```
-3. Verify CRI-O using crictl
+4. Verify CRI-O using crictl
    ```markdown
    crictl info
    ```
-4. Install [podman](https://podman.io/). Search the `auth.json` in the root directory and replace the content 
+5. Install [podman](https://podman.io/). Search the `auth.json` in the root directory, if not there create one and replace the content 
 with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret). Use podman to log-in to registry
    ```markdown
-   dnf install -y podman
+   dnf -y install podman
    podman login registry.redhat.io --tls-verify=false --authfile <authfile_path>
-   ```
-5. Install and start firewall
-   ```markdown
-   dnf install -y firewalld
-   systemctl enable firewalld --now
    ```
 6. Install Microshift
    ```markdown
-   curl -L -o /etc/yum.repos.d/fedora-modular.repo https://src.fedoraproject.org/rpms/fedora-repos/raw/rawhide/f/fedora-modular.repo 
-   curl -L -o /etc/yum.repos.d/fedora-updates-modular.repo https://src.fedoraproject.org/rpms/fedora-repos/raw/rawhide/f/fedora-updates-modular.repo
-   curl -L -o /etc/yum.repos.d/group_redhat-et-microshift-fedora-35.repo https://copr.fedorainfracloud.org/coprs/g/redhat-et/microshift/repo/fedora-35/group_redhat-et-microshift-fedora-35.repo
-   dnf copr enable -y @redhat-et/microshift
-   dnf install microshift 
+   dnf -y copr enable @redhat-et/microshift fedora-36-aarch64
    ```
-7. Enable firewall
+   For hardware architecture mismatch issue, edit the repo and replace basearch with aarch64 and then install Microshift with forced architecture.
+   ```markdown
+   vi /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:group_redhat-et:microshift.repo
+   dnf -y install microshift --forcearch aarch64
+   ```
+8. Enable firewall
    ```markdown
    firewall-cmd --zone=trusted --add-source=10.42.0.0/16 --permanent
    firewall-cmd --zone=public --add-port=80/tcp --permanent
@@ -59,21 +60,21 @@ with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret).
    firewall-cmd --zone=public --add-port=5353/udp --permanent
    firewall-cmd --reload
    ```
-8. Start Microshift service
+9. Start Microshift service
    ```markdown
    systemctl enable microshift --now
    ``` 
-9. Setup oc and kubectl CLI
-   ```markdown
-   curl -O https://mirror.openshift.com/pub/openshift-v4/arm64/clients/ocp/stable/openshift-client-linux.tar.gz
-   tar -xf openshift-client-linux.tar.gz -C /usr/local/bin oc kubectl
-   ```
-10. Configure kubeconfig
+10. Setup oc and kubectl CLI
+    ```markdown
+    curl -O https://mirror.openshift.com/pub/openshift-v4/arm64/clients/ocp/stable/openshift-client-linux.tar.gz
+    tar -xf openshift-client-linux.tar.gz -C /usr/local/bin oc kubectl
+    ```
+11. Configure kubeconfig
     ```markdown
     mkdir ~/.kube
     cat /var/lib/microshift/resources/kubeadmin/kubeconfig > ~/.kube/config
     ```
-11. Verify installation
+12. Verify installation
      ```markdown
      oc get pods -A
    

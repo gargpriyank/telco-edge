@@ -52,14 +52,14 @@ Make sure you select the Microshift custom repository. Download the ISO image an
    ```markdown
    crictl info
    ```
-4. [podman](https://podman.io/) will already be installed. Search the `auth.json` in the root directory and replace the content 
+4. [podman](https://podman.io/) will already be installed. Search the `auth.json` in the root directory, if not there create one and replace the content 
 with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret). Use podman to log-in to registry.
    ```markdown
    podman login registry.redhat.io --tls-verify=false --authfile <authfile_path>
    ```
 6. Install Microshift
    ```markdown
-   dnf copr enable -y @redhat-et/microshift
+   dnf -y copr enable @redhat-et/microshift
    rpm-ostree install microshift
    ```
 7. Enable firewall
