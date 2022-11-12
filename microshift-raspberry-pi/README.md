@@ -11,8 +11,7 @@ The step-by-step guidance for deploying Microshift on Raspberry Pi.
 
 ## Initial Preparation
 
-Download the [Fedora IOT](https://getfedora.org/en/iot/download/) 36 raw aarch64 image and create [Bootable SD Card](https://docs.fedoraproject.
-org/en-US/iot/physical-device-setup/) 
+Download the [Fedora IOT](https://getfedora.org/en/iot/download/) 36 raw aarch64 image and create [Bootable SD Card](https://docs.fedoraproject.org/en-US/iot/physical-device-setup/)
 for your Raspberry Pi.
    
 ## Installation
