@@ -72,6 +72,7 @@ with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret).
    ```
 8. Start Microshift service
    ```markdown
+   systemctl reboot
    systemctl enable microshift --now
    ``` 
 9. Setup oc and kubectl CLI
