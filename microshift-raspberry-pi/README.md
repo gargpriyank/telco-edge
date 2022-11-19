@@ -1,4 +1,4 @@
-# Deploy Microshift on Raspberry Pi.
+# Deploy Microshift cluster on Raspberry Pi.
 
 The step-by-step guidance for deploying Microshift on Raspberry Pi.
 

@@ -1,9 +1,8 @@
 # Deploy Microshift cluster and manage it with Red Hat Advanced Cluster Management for Kubernetes (RHACM)
 
-The step-by-step guidance for deploying Microshift on the edge devices, import the cluster on 
-RHACM and deploy a sample application onto the cluster. Please refer to the original 
-[Microshift documentation](https://microshift.io/docs/getting-started/) first and these guidelines will be helpful 
-in case you face any deployment issues. This documentation uses [rpm-ostree](https://rpm-ostree.readthedocs.io/en/stable/) for installation.
+The step-by-step guidance for deploying Microshift on the edge devices, import the cluster on RHACM and deploy a sample application onto the cluster. Please refer to 
+the original [Microshift documentation](https://microshift.io/docs/getting-started/) first and these guidelines will be helpful in case you face any deployment issues.
+This documentation uses [rpm-ostree](https://rpm-ostree.readthedocs.io/en/stable/) for installation.
 
 ## Navigation
 
@@ -23,7 +22,7 @@ You have a Red Hat account, a valid subscription and get the
 
 1. Log-in to your Red Hat Hybrid Cloud Console account and build and new RHEL 8.6 ISO image at [edge management](https://console.redhat.com/edge/manage-images). 
 Make sure you select the Microshift custom repository. Download the ISO image and install it onto your edge device.
-2. Register your system with subscription manager and enable RHOCP repos.
+2. Login as root user. Set a valid host name and register your edge device with subscription manager and enable RHOCP repos.
    ```markdown
    subscription-manager register --username=<user_name> --auto-attach
    subscription-manager repos --enable rhocp-4.8-for-rhel-8-x86_64-rpms
@@ -39,53 +38,54 @@ Make sure you select the Microshift custom repository. Download the ISO image an
 
 ## Installation
 
-1. Login as root user. Install and setup CRI-O
+1. Install and setup CRI-O
    ```markdown
    rpm-ostree install cri-o cri-tools
-   ```
-2. Reboot the device and enable CRI-O
-   ```markdown
    systemctl reboot
+   ```
+2. Enable CRI-O
+   ```markdown
    systemctl enable crio --now
    ```
 3. Verify CRI-O using crictl
    ```markdown
    crictl info
    ```
-4. [podman](https://podman.io/) will already be installed. Search the `auth.json` in the root directory, if not there create one and replace the content 
-with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret). Use podman to log-in to registry.
-   ```markdown
-   podman login registry.redhat.io --tls-verify=false --authfile <authfile_path>
-   ```
-6. Install Microshift
+4. Install Microshift
    ```markdown
    dnf -y copr enable @redhat-et/microshift
    rpm-ostree install microshift
+   systemctl reboot
    ```
-7. Enable firewall
+5. Enable firewall
    ```markdown
    firewall-cmd --zone=trusted --add-source=10.42.0.0/16 --permanent
    firewall-cmd --zone=public --add-port=80/tcp --permanent
    firewall-cmd --zone=public --add-port=443/tcp --permanent
+   firewall-cmd --zone=public --add-port=6443/tcp --permanent
    firewall-cmd --zone=public --add-port=5353/udp --permanent
    firewall-cmd --reload
    ```
-8. Start Microshift service
+6. [podman](https://podman.io/) will already be installed. Search the `auth.json` in the root directory, if not there create one and replace the content
+   with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret). Use podman to log-in to registry.
    ```markdown
-   systemctl reboot
+   podman login registry.redhat.io --tls-verify=false --authfile <authfile_path>
+   ```
+7. Start Microshift service
+   ```markdown
    systemctl enable microshift --now
    ``` 
-9. Setup oc and kubectl CLI
+8. Setup oc and kubectl CLI
    ```markdown
    curl -O https://mirror.openshift.com/pub/openshift-v4/$(uname -m)/clients/ocp/stable/openshift-client-linux.tar.gz
    tar -xf openshift-client-linux.tar.gz -C /usr/local/bin oc kubectl
    ```
-10. Configure kubeconfig
-    ```markdown
-    mkdir ~/.kube
-    cat /sysroot/ostree/deploy/rhel-edge/var/lib/containers/storage/volumes/microshift-data/_data/resources/kubeadmin/kubeconfig > ~/.kube/config
-    ```
-11. Verify installation
+9. Find "kubeconfig" at the root folder and copy it in ".kube" directory
+   ```markdown
+   mkdir ~/.kube
+   cat /var/lib/microshift/resources/kubeadmin/kubeconfig > ~/.kube/config
+   ```
+10. Verify installation
      ```markdown
      oc get pods -A
    
