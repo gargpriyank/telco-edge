@@ -166,6 +166,7 @@ The step-by-step guidance for preparing the IBM edge device environment and depl
    ```markdown
    mkdir ~/ieam-apps
    cd ~/ieam-apps
+   
    cat << 'EOF' > operator-example-node.policy.json
    > {
    > "properties": [
