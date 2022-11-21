@@ -87,6 +87,7 @@ The step-by-step guidance for preparing the IBM edge device environment and depl
       ```markdown
       cloudctl iam api-key-create "<choose-an-api-key-name>" -d "<choose-an-api-key-description>"
       ```
+      
 ## Deploy image registry
 
 1. Replace "kubeconfig" to connect back to microshift cluster and check the storage class name. It should be `kubevirt-hostpath-provisioner`
@@ -94,15 +95,20 @@ The step-by-step guidance for preparing the IBM edge device environment and depl
    cat /var/lib/microshift/resources/kubeadmin/kubeconfig > ~/.kube/config
    oc get storageclasses
    ```
-3. Use `image-registry.yaml` provided with this repo to deploy image registry
+2. Use `image-registry.yaml` provided with this repo to deploy image registry
    ```markdown
-   oc adm policy add-scc-to-user anyuid -z default
+   mkdir /var/registry /var/hpvolumes
+   chmod 777 /var/registry
+   chcon -t container_file_t -R /var/hpvolumes
+   systemctl reboot
+   ls -lZ /var
    oc apply -f image-registry.yaml
    ```
-4. Verify the image registry is deployed
+3. Verify the image registry is deployed
    ```markdown
    oc get pods -n image-registry
    ```
+   
 ## Install IEAM agent
 
 1. Set environment variables
@@ -133,4 +139,44 @@ The step-by-step guidance for preparing the IBM edge device environment and depl
 4. Install edge agent on the microshift cluster
    ```markdown
    ./agent-install.sh -D cluster -i 'css:'
+   ```
+5. (Optional) For uninstalling edge agent in case of an error
+   ```markdown
+   ./agent-uninstall.sh -u $HZN_EXCHANGE_USER_AUTH -d
+   ```
+   
+## Deploy services to edge cluster
+
+1. The hzn command is inside the agent container, set the aliases to run hzn from the host
+   ```markdown
+   cat << 'END_ALIASES' >> ~/.bash_aliases
+   > alias getagentpod='kubectl -n openhorizon-agent get pods --selector=app=agent -o jsonpath={.items[].metadata.name}'
+   > alias hzn='kubectl -n openhorizon-agent exec -i $(getagentpod) -- hzn'
+   > END_ALIASES
+   
+   source ~/.bash_aliases
+   ```
+2. Verify edge node is configured
+   ```markdown
+   hzn node list
+   ```
+3. Set the node policy to deploy helloworld operator and service
+   ```markdown
+   mkdir ~/ieam-apps
+   cd ~/ieam-apps
+   cat << 'EOF' > operator-example-node.policy.json
+   > {
+   > "properties": [
+   > { "name": "openhorizon.example", "value": "nginx-operator" }
+   > ]
+   > }
+   > EOF
+   
+   cat operator-example-node.policy.json | hzn policy update -f-
+   hzn policy list
+   ```
+4. After a minute, check for an agreement and the running edge operator and service containers
+   ```markdown
+   kubectl -n openhorizon-agent get pods
+   hzn agreement list
    ```
