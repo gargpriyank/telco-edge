@@ -43,21 +43,13 @@ Make sure you select the Microshift custom repository. Download the ISO image an
    rpm-ostree install cri-o cri-tools
    systemctl reboot
    ```
-2. Enable CRI-O
-   ```markdown
-   systemctl enable crio --now
-   ```
-3. Verify CRI-O using crictl
-   ```markdown
-   crictl info
-   ```
-4. Install Microshift
+2. Install Microshift
    ```markdown
    dnf -y copr enable @redhat-et/microshift
    rpm-ostree install microshift
    systemctl reboot
    ```
-5. Enable firewall
+3. Enable firewall
    ```markdown
    firewall-cmd --zone=trusted --add-source=10.42.0.0/16 --permanent
    firewall-cmd --zone=public --add-port=80/tcp --permanent
@@ -66,37 +58,42 @@ Make sure you select the Microshift custom repository. Download the ISO image an
    firewall-cmd --zone=public --add-port=5353/udp --permanent
    firewall-cmd --reload
    ```
-6. [podman](https://podman.io/) will already be installed. Search the `auth.json` in the root directory, if not there create one and replace the content
+4. [podman](https://podman.io/) will already be installed. Search the `auth.json` in the root directory, if not there create one and replace the content
    with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret). Use podman to log-in to registry.
    ```markdown
    podman login registry.redhat.io --tls-verify=false --authfile <authfile_path>
    ```
-7. Start Microshift service
+5. Start CRI-O and Microshift service
    ```markdown
-   systemctl enable microshift --now
+   curl -L https://github.com/openshift/microshift/releases/download/nightly/microshift-linux-amd64 > /usr/local/bin/microshift
+   chmod +x /usr/local/bin/microshift
+   cp /usr/lib/systemd/system/microshift.service /etc/systemd/system/microshift.service
+   sed -i "s|/usr/bin|/usr/local/bin|" /etc/systemd/system/microshift.service
+   systemctl daemon-reload
+   systemctl enable crio microshift --now
    ``` 
-8. Setup oc and kubectl CLI
+6. Setup oc and kubectl CLI
    ```markdown
    curl -O https://mirror.openshift.com/pub/openshift-v4/$(uname -m)/clients/ocp/stable/openshift-client-linux.tar.gz
    tar -xf openshift-client-linux.tar.gz -C /usr/local/bin oc kubectl
    ```
-9. Find "kubeconfig" at the root folder and copy it in ".kube" directory
+7. Find "kubeconfig" at the root folder and copy it in ".kube" directory
    ```markdown
    mkdir ~/.kube
    cat /var/lib/microshift/resources/kubeadmin/kubeconfig > ~/.kube/config
    ```
-10. Verify installation
-     ```markdown
-     oc get pods -A
+8. Verify installation
+    ```markdown
+    oc get pods -A
    
-     NAMESPACE                       NAME                                  READY   STATUS    RESTARTS   AGE
-     kube-system                     kube-flannel-ds-kbztk                 1/1     Running   0          10m
-     kubevirt-hostpath-provisioner   kubevirt-hostpath-provisioner-4f28f   1/1     Running   0          6m29s
-     openshift-dns                   dns-default-w4vnj                     2/2     Running   0          10m
-     openshift-dns                   node-resolver-4zlgk                   1/1     Running   0          10m
-     openshift-ingress               router-default-6c96f6bc66-94gfd       1/1     Running   0          10m
-     openshift-service-ca            service-ca-7bffb6f6bf-kvvkd           1/1     Running   0          10m
-     ```
+    NAMESPACE                       NAME                                  READY   STATUS    RESTARTS   AGE
+    kube-system                     kube-flannel-ds-kbztk                 1/1     Running   0          10m
+    kubevirt-hostpath-provisioner   kubevirt-hostpath-provisioner-4f28f   1/1     Running   0          6m29s
+    openshift-dns                   dns-default-w4vnj                     2/2     Running   0          10m
+    openshift-dns                   node-resolver-4zlgk                   1/1     Running   0          10m
+    openshift-ingress               router-default-6c96f6bc66-94gfd       1/1     Running   0          10m
+    openshift-service-ca            service-ca-7bffb6f6bf-kvvkd           1/1     Running   0          10m
+    ```
 
 ## Import Microshift cluster in RHACM
 

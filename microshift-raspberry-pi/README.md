@@ -30,6 +30,7 @@ for your Raspberry Pi.
 3. Install and setup dependencies and CRI-O
    ```markdown
    rpm-ostree install cri-o cri-tools
+   systemctl reboot
    ```
 4. [podman](https://podman.io/) will already be installed. Search the `auth.json` in the root directory, if not there create one and replace the content
 with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret). Use podman to log-in to registry.
@@ -39,6 +40,7 @@ with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret).
 5. Install Microshift
    ```markdown
    rpm-ostree install microshift
+   systemctl reboot
    ```
 6. Enable firewall
    ```markdown
@@ -50,7 +52,6 @@ with your [pull secret](https://cloud.redhat.com/openshift/install/pull-secret).
    ```
 7. Start Microshift service
    ```markdown
-   systemctl reboot
    curl -L https://github.com/openshift/microshift/releases/download/nightly/microshift-linux-arm64 > /usr/local/bin/microshift
    chmod +x /usr/local/bin/microshift
    cp /usr/lib/systemd/system/microshift.service /etc/systemd/system/microshift.service

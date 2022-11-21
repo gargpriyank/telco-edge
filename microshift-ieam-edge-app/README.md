@@ -14,9 +14,11 @@ The step-by-step guidance for preparing the IBM edge device environment and depl
  [microshift-raspberry-pi](https://github.com/gargpriyank/telco-edge/tree/main/microshift-raspberry-pi).
 2. Have [IEAM Management Hub](https://www.ibm.com/docs/en/eam/4.4?topic=installation-install-ieam) installed on the managed from Red Hat OpenShift cluster. 
    1. Login to the edge device as root user. Use `oc` command to login to the Red Hat OpenShift cluster where IEAM is deployed. Ensure all pods in "ibm-common-services" 
-      namespace are either Running or Completed
+      and "ibm-edge" namespaces are either Running or Completed
       ```markdown
+      oc project ibm-edge
       oc get pods -n ibm-common-services
+      oc get pods
       ```
    2. Log in, pull and extract the agent bundle with your entitlement key through the [Entitled Registry](https://myibm.ibm.com/products-services/containerlibrary)
       ```markdown
@@ -45,7 +47,7 @@ The step-by-step guidance for preparing the IBM edge device environment and depl
       cd ~/ibm-eam-4.4.0-bundle/agent && \
       tar -zxvf edge-packages-4.4.0.tar.gz
       
-      rpm-ostree install make
+      rpm-ostree install make git jq
       rpm-ostree install ./edge-packages-4.4.0/linux/rpm/x86_64/horizon-cli-*.x86_64.rpm
       systemctl reboot
       ```
@@ -57,48 +59,43 @@ The step-by-step guidance for preparing the IBM edge device environment and depl
       ```
    6. Set IEAM cluster URL, user credentials and `podman` authentication environment variables
       ```markdown
+      cd ~/ibm-eam-4.4.0-bundle
       export CLUSTER_URL=https://$(oc get cm management-ingress-ibmcloud-cluster-info -o jsonpath='{.data.cluster_ca_domain}' -n ibm-common-services)
+      oc --insecure-skip-tls-verify=true -n kube-public get secret ibmcloud-cluster-ca-cert -o jsonpath="{.data.ca\.crt}" | base64 --decode > ieam.crt
+      export HZN_MGMT_HUB_CERT_PATH="$PWD/ieam.crt"
+      export HZN_FSS_CSSURL=${CLUSTER_URL}/edge-css
       export CLUSTER_USERNAME=$(oc -n ibm-common-services get secret platform-auth-idp-credentials -o jsonpath='{.data.admin_username}' | base64 --decode)
       export CLUSTER_USERPASS=$(oc -n ibm-common-services get secret platform-auth-idp-credentials -o jsonpath='{.data.admin_password}' | base64 --decode)
       export REGISTRY_USERNAME=cp
       export REGISTRY_PASSWORD=<ENTITLEMENT_KEY>
       ```
-   7. Download and install [cloudctl](https://www.ibm.com/docs/en/eam/4.4?topic=cli-installing-cloudctl-kubectl-oc) binary. Use `cloudctl` to login to IEAM management hub
+   7. Download and install IBM Cloud Pak CLI [cloudctl](https://www.ibm.com/docs/en/eam/4.4?topic=cli-installing-cloudctl-kubectl-oc) binary. Use `cloudctl` to login to 
+      IEAM management hub
       ```markdown
-      cloudctl login -a $CLUSTER_URL -u $CLUSTER_USERNAME -p $CLUSTER_USERPASS --skip-ssl-validation
+      cloudctl login -a $CLUSTER_URL -u $CLUSTER_USERNAME -p $CLUSTER_USERPASS -n ibm-edge --skip-ssl-validation
       ```
-   8. Create API key. Find the key value in the output and save it for future use
+   8. Generate the files for edge device installation
+      ```markdown
+      cd ~/ibm-eam-4.4.0-bundle/agent
+      cp /usr/bin/edgeNodeFiles.sh edgeNodeFiles.sh
+      sed -i 's/docker/podman/g' ./edgeNodeFiles.sh
+      sed -i 's/podman.io/docker.io/g' ./edgeNodeFiles.sh
+      HZN_EXCHANGE_USER_AUTH='' ./edgeNodeFiles.sh ALL -c -p edge-packages-4.4.0 -r cp.icr.io/cp/ieam
+      ```
+   9. Create API key. Find the key value in the output and save it for future use
       ```markdown
       cloudctl iam api-key-create "<choose-an-api-key-name>" -d "<choose-an-api-key-description>"
       ```
-   9. Set the Horizon environment variables
-      ```markdown
-      export HZN_EXCHANGE_USER_AUTH=iamapikey:<iam-api-key>
-      export HZN_ORG_ID=<org-id>
-      export HZN_EXCHANGE_URL=$CLUSTER_URL/edge-exchange/v1
-      export HZN_FSS_CSSURL=$CLUSTER_URL/edge-css/
-      ```
-   10. Generate the files for edge device installation
-       ```markdown
-       cd ~/ibm-eam-4.4.0-bundle/agent
-       cp /usr/bin/edgeNodeFiles.sh edgeNodeFiles.sh
-       sed -i 's/docker/podman/g' ./edgeNodeFiles.sh
-       sed -i 's/podman.io/docker.io/g' ./edgeNodeFiles.sh
-       HZN_EXCHANGE_USER_AUTH='' ./edgeNodeFiles.sh ALL -c -p edge-packages-4.4.0 -r cp.icr.io/cp/ieam
-       ```
 ## Deploy image registry
 
-1. Set a valid host name
-   ```markdown
-   hostnamectl set-hostname <your-new-hostname-with-2-dots>
-   ```
-2. Replace "kubeconfig" to connect back to microshift cluster and check the storage class name. It should be `kubevirt-hostpath-provisioner`
+1. Replace "kubeconfig" to connect back to microshift cluster and check the storage class name. It should be `kubevirt-hostpath-provisioner`
    ```markdown
    cat /var/lib/microshift/resources/kubeadmin/kubeconfig > ~/.kube/config
    oc get storageclasses
    ```
 3. Use `image-registry.yaml` provided with this repo to deploy image registry
    ```markdown
+   oc adm policy add-scc-to-user anyuid -z default
    oc apply -f image-registry.yaml
    ```
 4. Verify the image registry is deployed
@@ -107,13 +104,32 @@ The step-by-step guidance for preparing the IBM edge device environment and depl
    ```
 ## Install IEAM agent
 
-1. Download `agent-install.sh`   
+1. Set environment variables
    ```markdown
+   export HZN_EXCHANGE_USER_AUTH=iamapikey:<api-key>
+   export HZN_ORG_ID=<your-exchange-organization>
+   export HZN_FSS_CSSURL=https://<ieam-management-hub-ingress>/edge-css/
+   export EDGE_CLUSTER_STORAGE_CLASS=kubevirt-hostpath-provisioner
+   export REGISTRY_ENDPOINT=$(oc get service image-registry -n image-registry  -o 'jsonpath={.spec.clusterIP}'):5000
+   export IMAGE_ON_EDGE_CLUSTER_REGISTRY=${REGISTRY_ENDPOINT}/openhorizon-agent/amd64_anax_k8s
+   ```
+2. Update "registries.conf" to add the image registry endpoint, restart crio and microshift services
+   ```markdown
+   cat << EOF | tee -a /etc/containers/registries.conf
+   > [[registry]]
+   > location = "${REGISTRY_ENDPOINT}"
+   > insecure = true
+   > EOF
+   
+   systemctl restart crio microshift
+   ```
+3. Download `agent-install.sh` script from the Cloud Sync Service (CSS)
+   ```markdown
+   cd ~/ibm-eam-4.4.0-bundle/agent
    curl -u "$HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH" -k -o agent-install.sh $HZN_FSS_CSSURL/api/v1/objects/IBM/agent_files/agent-install.sh/data
    chmod +x agent-install.sh
    ```
-2. Install edge agent on the microshift cluster
+4. Install edge agent on the microshift cluster
    ```markdown
-   sudo -s -E ./agent-install.sh -i 'css:' -p IBM/pattern-ibm.helloworld -w '*' -T 120
+   ./agent-install.sh -D cluster -i 'css:'
    ```
-3. 
