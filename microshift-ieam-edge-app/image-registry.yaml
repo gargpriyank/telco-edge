@@ -9,12 +9,12 @@ metadata:
   name: image-registry-pvc
   namespace: image-registry
 spec:
-  storageClassName: "kubevirt-hostpath-provisioner"
+  storageClassName: kubevirt-hostpath-provisioner
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
+      storage: 5Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -37,6 +37,7 @@ spec:
         - name: image-registry-pvc-storage
           persistentVolumeClaim:
             claimName: image-registry-pvc
+            readOnly: false
       containers:
         - name: image-registry
           image: registry
@@ -44,7 +45,7 @@ spec:
             - containerPort: 5000
           volumeMounts:
             - name: image-registry-pvc-storage
-              mountPath: /var/lib/registry
+              mountPath: /var/registry
 ---
 apiVersion: v1
 kind: Service
