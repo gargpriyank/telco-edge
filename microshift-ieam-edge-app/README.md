@@ -12,7 +12,8 @@ The step-by-step guidance for preparing the IBM edge device environment and depl
 
 1. Have Microshift deployed on the edge device either via [microshift-rhacm](https://github.com/gargpriyank/telco-edge/tree/main/microshift-rhacm) or 
  [microshift-raspberry-pi](https://github.com/gargpriyank/telco-edge/tree/main/microshift-raspberry-pi).
-2. Have [IEAM Management Hub](https://www.ibm.com/docs/en/eam/4.4?topic=installation-install-ieam) installed on the managed from Red Hat OpenShift cluster. 
+2. Have [IEAM Management Hub](https://www.ibm.com/docs/en/eam/4.4?topic=installation-install-ieam) installed on the managed from Red Hat OpenShift cluster. Collect 
+   the necessary files for IEAM agent installation
    1. Login to the edge device as root user. Use `oc` command to login to the Red Hat OpenShift cluster where IEAM is deployed. Ensure all pods in "ibm-common-services" 
       and "ibm-edge" namespaces are either Running or Completed
       ```markdown
