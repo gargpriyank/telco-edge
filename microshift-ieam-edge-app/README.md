@@ -6,7 +6,9 @@ The step-by-step guidance for preparing the IBM edge device environment and depl
 ## Navigation
 
 - [Prerequisites](#prerequisites)
-- [Configure image registry](#optional---deploy-image-registry)
+- [Deploy image registry](#deploy-image-registry)
+- [Install IEAM agent](#install-ieam-agent)
+- [Deploy services to edge cluster](#deploy-services-to-edge-cluster)
 
 ## Prerequisites
 
